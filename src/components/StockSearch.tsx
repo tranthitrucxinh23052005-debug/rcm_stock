@@ -73,12 +73,12 @@ export default function StockSearch({
   return (
     <div className="glass-card p-6 glow-primary">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00c2a8] to-[#00a890] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e1061e, #b30518)' }}>
           <Search className="w-5 h-5 text-white" strokeWidth={2.5} />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white">Phân tích cổ phiếu</h2>
-          <p className="text-sm text-slate-400">Nhập mã cổ phiếu để phân tích kỹ thuật</p>
+          <h2 className="text-lg font-bold text-main">Phân tích cổ phiếu</h2>
+          <p className="text-sm text-muted">Nhập mã cổ phiếu để phân tích kỹ thuật</p>
         </div>
       </div>
 
@@ -90,13 +90,14 @@ export default function StockSearch({
             onChange={(e) => setTicker(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === 'Enter' && !loading && analyze()}
             placeholder="VD: VNM, FPT, HPG..."
-            className="w-full px-4 py-3 bg-[#0a0e17] border border-[#2a3142] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#00c2a8] focus:ring-2 focus:ring-[#00c2a8]/20 transition-all uppercase tracking-wide font-medium"
+            className="w-full px-4 py-3 bg-input border border-default rounded-xl text-main placeholder-[var(--color-text-dim)] focus:outline-none focus:border-primary transition-all uppercase tracking-wide font-medium"
+            style={{ outline: 'none' }}
             disabled={loading}
           />
           {ticker && (
             <button
               onClick={() => setTicker('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-dim hover:text-muted transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -106,11 +107,11 @@ export default function StockSearch({
           <button
             onClick={handleWatchlistToggle}
             title={isInWatchlist(ticker) ? 'Xóa khỏi danh mục' : 'Thêm vào danh mục'}
-            className="px-3 py-3 rounded-xl border border-[#2a3142] bg-[#0a0e17] hover:bg-[#1a2030] transition-colors"
+            className="px-3 py-3 rounded-xl border border-default bg-input hover:bg-surface-2 transition-colors"
           >
             <Star
               className={`w-5 h-5 ${
-                isInWatchlist(ticker) ? 'text-[#f59e0b] fill-[#f59e0b]' : 'text-slate-400'
+                isInWatchlist(ticker) ? 'text-[var(--color-warning)] fill-[var(--color-warning)]' : 'text-muted'
               }`}
             />
           </button>
@@ -118,7 +119,8 @@ export default function StockSearch({
         <button
           onClick={() => analyze()}
           disabled={loading || !ticker.trim()}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00c2a8] to-[#00a890] text-white font-semibold hover:from-[#00d4b8] hover:to-[#00b89e] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 min-w-[120px] justify-center"
+          className="px-6 py-3 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 min-w-[120px] justify-center"
+          style={{ background: 'linear-gradient(to right, #e1061e, #b30518)' }}
         >
           {loading ? (
             <>
@@ -132,13 +134,13 @@ export default function StockSearch({
       </div>
 
       {error && (
-        <div className="mt-3 px-4 py-2.5 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded-lg text-[#ef4444] text-sm animate-fade-in">
+        <div className="mt-3 px-4 py-2.5 rounded-lg text-sm animate-fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--color-down)' }}>
           {error}
         </div>
       )}
 
       <div className="mt-4">
-        <p className="text-xs text-slate-500 mb-2 font-medium">Mã phổ biến:</p>
+        <p className="text-xs text-muted mb-2 font-medium">Mã phổ biến:</p>
         <div className="flex flex-wrap gap-2">
           {POPULAR_TICKERS.map((t) => (
             <button
@@ -148,7 +150,7 @@ export default function StockSearch({
                 analyze(t);
               }}
               disabled={loading}
-              className="px-3 py-1.5 text-xs font-medium bg-[#1a2030] border border-[#2a3142] rounded-lg text-slate-300 hover:border-[#00c2a8] hover:text-[#00c2a8] transition-all disabled:opacity-50"
+              className="px-3 py-1.5 text-xs font-medium bg-surface-2 border border-default rounded-lg text-muted hover:border-primary hover:text-primary transition-all disabled:opacity-50"
             >
               {t}
             </button>
@@ -157,9 +159,9 @@ export default function StockSearch({
       </div>
 
       {watchlist.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-[#2a3142]">
-          <p className="text-xs text-slate-500 mb-2 font-medium flex items-center gap-1.5">
-            <Star className="w-3 h-3 text-[#f59e0b] fill-[#f59e0b]" />
+        <div className="mt-4 pt-4 border-t border-default">
+          <p className="text-xs text-muted mb-2 font-medium flex items-center gap-1.5">
+            <Star className="w-3 h-3 text-[var(--color-warning)] fill-[var(--color-warning)]" />
             Danh mục theo dõi:
           </p>
           <div className="flex flex-wrap gap-2">
@@ -171,7 +173,8 @@ export default function StockSearch({
                   analyze(w.ticker);
                 }}
                 disabled={loading}
-                className="px-3 py-1.5 text-xs font-medium bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded-lg text-[#f59e0b] hover:bg-[#f59e0b]/20 transition-all disabled:opacity-50"
+                className="px-3 py-1.5 text-xs font-medium rounded-lg text-[var(--color-warning)] transition-all disabled:opacity-50"
+                style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}
               >
                 {w.ticker}
               </button>

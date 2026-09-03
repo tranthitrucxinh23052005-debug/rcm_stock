@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LineChart, TrendingUp, Github, Sparkles } from 'lucide-react';
+import { LineChart, TrendingUp, Sun, Moon, Printer } from 'lucide-react';
 import { supabase, EDGE_FUNCTION_URL } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 import type { AnalyzeResponse, StockAnalysisRecord, WatchlistAlert, WatchlistItem } from '@/types';
 import StockSearch from '@/components/StockSearch';
 import MetricsPanel from '@/components/MetricsPanel';
@@ -10,8 +11,11 @@ import AnalysisResultPanel from '@/components/AnalysisResultPanel';
 import HistoryPanel from '@/components/HistoryPanel';
 import WatchlistPanel from '@/components/WatchlistPanel';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
+import PriceChart from '@/components/PriceChart';
+import RsiChart from '@/components/RsiChart';
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<StockAnalysisRecord[]>([]);
@@ -196,6 +200,7 @@ function App() {
         },
       },
       analysis: record.analysis,
+      bars: [],
     });
   }, []);
 
@@ -222,26 +227,44 @@ function App() {
     [watchlist, fetchWatchlist]
   );
 
+  const handlePrint = useCallback(() => {
+    window.print();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0a0e17] grid-pattern">
+    <div className="min-h-screen grid-pattern" style={{ backgroundColor: 'var(--color-bg)' }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0a0e17]/80 backdrop-blur-xl border-b border-[#2a3142]">
+      <header className="sticky top-0 z-50 no-print" style={{ backgroundColor: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00c2a8] to-[#3b82f6] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e1061e, #b30518)' }}>
                 <LineChart className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white leading-tight">
+                <h1 className="text-lg font-bold text-main leading-tight">
                   Phân Tích Kỹ Thuật
                 </h1>
-                <p className="text-xs text-slate-500">Cổ phiếu Việt Nam · 6 bước</p>
+                <p className="text-xs text-muted">Cổ phiếu Việt Nam · 6 bước</p>
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#1a2030] border border-[#2a3142] rounded-lg">
-              <Sparkles className="w-3.5 h-3.5 text-[#00c2a8]" />
-              <span className="text-xs text-slate-400">Real-time Analysis</span>
+            <div className="flex items-center gap-2">
+              {result && (
+                <button
+                  onClick={handlePrint}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-default bg-surface text-xs font-medium text-muted hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">In báo cáo</span>
+                </button>
+              )}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-default bg-surface text-xs font-medium text-muted hover:border-primary hover:text-primary transition-colors"
+              >
+                {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">{theme === 'dark' ? 'Sáng' : 'Tối'}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -251,7 +274,7 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Search & History */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-6 no-print">
             <StockSearch
               onResult={handleResult}
               onLoadingChange={setLoading}
@@ -281,6 +304,22 @@ function App() {
             ) : result ? (
               <div className="space-y-4">
                 <MetricsPanel metrics={result.metrics} />
+                {result.bars && result.bars.length > 0 && (
+                  <PriceChart
+                    bars={result.bars}
+                    ma20={result.metrics.ma20}
+                    ma50={result.metrics.ma50}
+                    resistances={result.metrics.resistances}
+                    supports={result.metrics.supports}
+                  />
+                )}
+                {result.bars && result.bars.length > 0 && (
+                  <RsiChart
+                    bars={result.bars}
+                    currentRsi={result.metrics.rsi}
+                    rsiLabel={result.metrics.rsi_label}
+                  />
+                )}
                 {result.metrics.quant && (
                   <QuantPanel quant={result.metrics.quant} ticker={result.metrics.ticker} />
                 )}
@@ -295,13 +334,13 @@ function App() {
               </div>
             ) : (
               <div className="glass-card p-12 flex flex-col items-center justify-center text-center min-h-[500px]">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00c2a8]/20 to-[#3b82f6]/20 border border-[#2a3142] flex items-center justify-center mb-4">
-                  <TrendingUp className="w-8 h-8 text-[#00c2a8]" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(225, 6, 30, 0.1)', border: '1px solid var(--color-border)' }}>
+                  <TrendingUp className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">
+                <h3 className="text-lg font-bold text-main mb-2">
                   Bắt đầu phân tích cổ phiếu
                 </h3>
-                <p className="text-sm text-slate-400 max-w-sm">
+                <p className="text-sm text-muted max-w-sm">
                   Nhập mã cổ phiếu (VD: VNM, FPT, HPG) để nhận phân tích kỹ thuật chi tiết theo quy trình 6 bước:
                   bối cảnh thị trường, xu hướng, vùng giá, động lượng, kịch bản giao dịch và quản trị rủi ro.
                 </p>
@@ -316,9 +355,9 @@ function App() {
                   ].map((step, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-2 px-3 py-2 bg-[#0a0e17] border border-[#2a3142] rounded-lg text-xs text-slate-400"
+                      className="flex items-center gap-2 px-3 py-2 bg-input border border-default rounded-lg text-xs text-muted"
                     >
-                      <span className="w-5 h-5 rounded-full bg-[#00c2a8]/10 text-[#00c2a8] flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                      <span className="w-5 h-5 rounded-full text-primary flex items-center justify-center font-bold text-[10px] flex-shrink-0" style={{ backgroundColor: 'rgba(225, 6, 30, 0.1)' }}>
                         {i + 1}
                       </span>
                       {step}
@@ -332,15 +371,15 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#2a3142] mt-12">
+      <footer className="no-print" style={{ borderTop: '1px solid var(--color-border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-dim">
               Dữ liệu phân tích mang tính chất tham khảo, không phải lời khuyên đầu tư
             </p>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Github className="w-3.5 h-3.5" />
-              <span>Powered by Supabase Edge Functions</span>
+            <div className="flex items-center gap-2 text-xs text-dim">
+              <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>SSI</span>
+              <span>· Powered by Supabase Edge Functions</span>
             </div>
           </div>
         </div>

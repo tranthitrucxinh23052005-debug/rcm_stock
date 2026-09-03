@@ -1435,8 +1435,13 @@ Deno.serve(async (req: Request) => {
       console.error("DB insert error:", error.message);
     }
 
+    // Return last 60 bars for charting (candlestick + volume + indicators)
+    const chartBars = bars.slice(-60).map(b => ({
+      t: b.t, o: round2(b.o), h: round2(b.h), l: round2(b.l), c: round2(b.c), v: b.v,
+    }));
+
     return new Response(
-      JSON.stringify({ metrics, analysis }),
+      JSON.stringify({ metrics, analysis, bars: chartBars }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

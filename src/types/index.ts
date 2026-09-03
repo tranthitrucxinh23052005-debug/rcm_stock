@@ -103,9 +103,19 @@ export interface AnalysisResult {
   nguon: string[];
 }
 
+export interface OHLCBar {
+  t: number;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v: number;
+}
+
 export interface AnalyzeResponse {
   metrics: StockMetrics;
   analysis: AnalysisResult;
+  bars: OHLCBar[];
 }
 
 export interface StockAnalysisRecord {
