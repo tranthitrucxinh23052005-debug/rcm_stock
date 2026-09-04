@@ -7,6 +7,8 @@ interface RsiChartProps {
   bars: OHLCBar[];
   currentRsi: number;
   rsiLabel: string;
+  ma20: number;
+  ma50: number;
 }
 
 function calcRSISeries(closes: number[], period = 14): number[] {
@@ -33,49 +35,72 @@ function calcRSISeries(closes: number[], period = 14): number[] {
   return rsiSeries;
 }
 
-export default function RsiChart({ bars, currentRsi, rsiLabel }: RsiChartProps) {
+export default function RsiChart({ bars, currentRsi, rsiLabel, ma20, ma50 }: RsiChartProps) {
   const { theme } = useTheme();
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const isDark = theme === 'dark';
   const c = useMemo(() => ({
-    bg: isDark ? '#0d0d0f' : '#ffffff',
     border: isDark ? '#333338' : '#e5e7eb',
     text: isDark ? '#f3f4f6' : '#111827',
     textMuted: isDark ? '#9ca3af' : '#6b7280',
     textDim: isDark ? '#6b7280' : '#9ca3af',
     gridLine: isDark ? 'rgba(51,51,56,0.25)' : 'rgba(229,231,235,0.4)',
     rsiColor: '#e1061e',
+    ma20Color: '#3b82f6',
+    ma50Color: '#f59e0b',
     overbought: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(220,38,38,0.08)',
     oversold: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(5,150,105,0.08)',
   }), [isDark]);
 
   const layout = useMemo(() => {
     const width = 800;
-    const height = 160;
+    const height = 200;
     const margin = { top: 15, right: 50, bottom: 25, left: 10 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
     return { width, height, margin, chartWidth, chartHeight };
   }, []);
 
-  const { displayBars, rsiSeries } = useMemo(() => {
-    if (bars.length === 0) return { displayBars: [], rsiSeries: [] };
+  const { displayBars, rsiSeries, ma20Series, ma50Series, priceMin, priceMax } = useMemo(() => {
+    if (bars.length === 0) return { displayBars: [], rsiSeries: [], ma20Series: [], ma50Series: [], priceMin: 0, priceMax: 0 };
     const displayBars = bars.slice(-40);
     const closes = bars.map(b => b.c);
     const allRsi = calcRSISeries(closes, 14);
     const startOffset = bars.length - displayBars.length;
-    // Align RSI series with display bars
     const rsiOffset = allRsi.length - displayBars.length;
     const rsiSeries = rsiOffset >= 0 ? allRsi.slice(rsiOffset) : [];
-    return { displayBars, rsiSeries };
-  }, [bars]);
+
+    // Compute MA series for the display window
+    const ma20Series: { x: number; y: number }[] = [];
+    const ma50Series: { x: number; y: number }[] = [];
+    for (let i = 0; i < displayBars.length; i++) {
+      const globalIdx = startOffset + i;
+      if (globalIdx >= 19) {
+        const ma20Val = closes.slice(globalIdx - 19, globalIdx + 1).reduce((a, b) => a + b, 0) / 20;
+        ma20Series.push({ x: i, y: ma20Val });
+      }
+      if (globalIdx >= 49) {
+        const ma50Val = closes.slice(globalIdx - 49, globalIdx + 1).reduce((a, b) => a + b, 0) / 50;
+        ma50Series.push({ x: i, y: ma50Val });
+      }
+    }
+
+    // Price range for MA overlay (right axis)
+    const lows = displayBars.map(b => b.l);
+    const highs = displayBars.map(b => b.h);
+    const allLevels = [...highs, ...lows, ma20, ma50];
+    const priceMin = Math.min(...allLevels) * 0.995;
+    const priceMax = Math.max(...allLevels) * 1.005;
+
+    return { displayBars, rsiSeries, ma20Series, ma50Series, priceMin, priceMax };
+  }, [bars, ma20, ma50]);
 
   if (bars.length === 0 || rsiSeries.length === 0) {
     return (
       <div className="glass-card p-5">
-        <p className="text-sm text-muted">Không đủ dữ liệu RSI</p>
+        <p className="text-sm text-muted">Không đủ dữ liệu RSI & MA</p>
       </div>
     );
   }
@@ -85,29 +110,39 @@ export default function RsiChart({ bars, currentRsi, rsiLabel }: RsiChartProps) 
 
   const xCenter = (i: number) => layout.margin.left + i * candleWidth + candleWidth / 2;
   const rsiToY = (rsi: number) => layout.margin.top + (1 - rsi / 100) * layout.chartHeight;
+  const priceToY = (price: number) => {
+    const range = priceMax - priceMin || 1;
+    return layout.margin.top + (1 - (price - priceMin) / range) * layout.chartHeight;
+  };
 
-  // RSI line points
   const rsiPoints = rsiSeries.map((rsi, i) => `${xCenter(i)},${rsiToY(rsi)}`).join(' ');
-
-  // Y-axis labels
   const yLabels = [0, 30, 50, 70, 100];
-
-  // Date labels
   const dateLabels = displayBars.filter((_, i) => i % Math.max(1, Math.floor(n / 6)) === 0);
 
   const rsiValueColor = currentRsi >= 70 ? (isDark ? '#ef4444' : '#dc2626') : currentRsi <= 30 ? (isDark ? '#10b981' : '#059669') : (isDark ? '#f59e0b' : '#d97706');
 
   return (
     <div className="glass-card p-5">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-sm" style={{ background: c.rsiColor }} />
-          <h4 className="text-sm font-semibold text-main">RSI (14)</h4>
+          <h4 className="text-sm font-semibold text-main">RSI (14) & MA</h4>
           <span className="text-xs text-muted">— {rsiLabel}</span>
         </div>
-        <span className="text-lg font-bold" style={{ color: rsiValueColor }}>
-          {formatVN(currentRsi, 1)}
-        </span>
+        <div className="flex items-center gap-4 text-xs">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 rounded" style={{ background: c.rsiColor }} />
+            <span className="text-muted">RSI: <span className="font-bold" style={{ color: rsiValueColor }}>{formatVN(currentRsi, 1)}</span></span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 rounded" style={{ background: c.ma20Color }} />
+            <span className="text-muted">MA20: <span className="font-bold text-main">{formatVN(ma20)}</span></span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 rounded" style={{ background: c.ma50Color }} />
+            <span className="text-muted">MA50: <span className="font-bold text-main">{formatVN(ma50)}</span></span>
+          </span>
+        </div>
       </div>
 
       <div className="relative w-full overflow-x-auto">
@@ -127,24 +162,30 @@ export default function RsiChart({ bars, currentRsi, rsiLabel }: RsiChartProps) 
           }}
           onMouseLeave={() => setHoverIdx(null)}
         >
-          {/* Overbought zone (70-100) */}
+          {/* Overbought zone */}
           <rect x={layout.margin.left} y={rsiToY(100)} width={layout.chartWidth} height={rsiToY(70) - rsiToY(100)} fill={c.overbought} />
-
-          {/* Oversold zone (0-30) */}
+          {/* Oversold zone */}
           <rect x={layout.margin.left} y={rsiToY(30)} width={layout.chartWidth} height={rsiToY(0) - rsiToY(30)} fill={c.oversold} />
 
           {/* Grid lines */}
           {yLabels.map((val) => (
             <g key={`rsi-grid-${val}`}>
               <line x1={layout.margin.left} y1={rsiToY(val)} x2={layout.width - layout.margin.right} y2={rsiToY(val)} stroke={c.gridLine} strokeWidth={1} strokeDasharray={val === 30 || val === 70 ? '4,4' : '2,4'} />
-              <text x={layout.width - layout.margin.right + 6} y={rsiToY(val) + 4} fill={c.textDim} fontSize={10} fontFamily="'Be Vietnam Pro', sans-serif">
-                {val}
-              </text>
+              <text x={layout.width - layout.margin.right + 6} y={rsiToY(val) + 4} fill={c.textDim} fontSize={10} fontFamily="'Be Vietnam Pro', sans-serif">{val}</text>
             </g>
           ))}
 
-          {/* RSI line */}
-          <polyline fill="none" stroke={c.rsiColor} strokeWidth={1.5} points={rsiPoints} />
+          {/* MA20 line (right axis - price) */}
+          {ma20Series.length > 1 && (
+            <polyline fill="none" stroke={c.ma20Color} strokeWidth={1.5} strokeDasharray="5,3" points={ma20Series.map(p => `${xCenter(p.x)},${priceToY(p.y)}`).join(' ')} />
+          )}
+          {/* MA50 line (right axis - price) */}
+          {ma50Series.length > 1 && (
+            <polyline fill="none" stroke={c.ma50Color} strokeWidth={1.5} strokeDasharray="5,3" points={ma50Series.map(p => `${xCenter(p.x)},${priceToY(p.y)}`).join(' ')} />
+          )}
+
+          {/* RSI line (left axis 0-100) */}
+          <polyline fill="none" stroke={c.rsiColor} strokeWidth={2} points={rsiPoints} />
 
           {/* Date labels */}
           {dateLabels.map((bar, i) => {
@@ -153,9 +194,7 @@ export default function RsiChart({ bars, currentRsi, rsiLabel }: RsiChartProps) 
             const d = new Date(bar.t * 1000);
             const label = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             return (
-              <text key={`rsi-date-${i}`} x={x} y={layout.height - 6} fill={c.textDim} fontSize={10} textAnchor="middle" fontFamily="'Be Vietnam Pro', sans-serif">
-                {label}
-              </text>
+              <text key={`rsi-date-${i}`} x={x} y={layout.height - 6} fill={c.textDim} fontSize={10} textAnchor="middle" fontFamily="'Be Vietnam Pro', sans-serif">{label}</text>
             );
           })}
 

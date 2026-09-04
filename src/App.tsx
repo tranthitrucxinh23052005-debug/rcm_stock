@@ -318,6 +318,8 @@ function App() {
                     bars={result.bars}
                     currentRsi={result.metrics.rsi}
                     rsiLabel={result.metrics.rsi_label}
+                    ma20={result.metrics.ma20}
+                    ma50={result.metrics.ma50}
                   />
                 )}
                 {result.metrics.quant && (
