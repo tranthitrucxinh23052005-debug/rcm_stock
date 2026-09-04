@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LineChart, TrendingUp, Sun, Moon, Printer } from 'lucide-react';
+import { LineChart, TrendingUp, Sun, Moon, Printer, LayoutGrid, ShoppingCart } from 'lucide-react';
 import { supabase, EDGE_FUNCTION_URL } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 import type { AnalyzeResponse, StockAnalysisRecord, WatchlistAlert, WatchlistItem } from '@/types';
@@ -13,6 +13,7 @@ import WatchlistPanel from '@/components/WatchlistPanel';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import PriceChart from '@/components/PriceChart';
 import RsiChart from '@/components/RsiChart';
+import RecommendationsPage from '@/components/RecommendationsPage';
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -22,6 +23,7 @@ function App() {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [alerts, setAlerts] = useState<WatchlistAlert[]>([]);
   const [monitoring, setMonitoring] = useState(false);
+  const [activeTab, setActiveTab] = useState<'analysis' | 'recommendations'>('analysis');
 
   const fetchHistory = useCallback(async () => {
     const { data } = await supabase
@@ -245,11 +247,11 @@ function App() {
                 <h1 className="text-lg font-bold text-main leading-tight">
                   Phân Tích Kỹ Thuật
                 </h1>
-                <p className="text-xs text-muted">Cổ phiếu Việt Nam · 6 bước</p>
+                <p className="text-xs text-muted">Cổ phiếu Việt Nam · SSI</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {result && (
+              {activeTab === 'analysis' && result && (
                 <button
                   onClick={handlePrint}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-default bg-surface text-xs font-medium text-muted hover:border-primary hover:text-primary transition-colors"
@@ -267,11 +269,34 @@ function App() {
               </button>
             </div>
           </div>
+
+          {/* Tab navigation */}
+          <div className="flex items-center gap-1 mt-4">
+            <button
+              onClick={() => setActiveTab('analysis')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'analysis' ? 'text-white' : 'text-muted hover:text-main'}`}
+              style={activeTab === 'analysis' ? { background: 'linear-gradient(to right, #e1061e, #b30518)' } : {}}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              Phân tích
+            </button>
+            <button
+              onClick={() => setActiveTab('recommendations')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'recommendations' ? 'text-white' : 'text-muted hover:text-main'}`}
+              style={activeTab === 'recommendations' ? { background: 'linear-gradient(to right, #e1061e, #b30518)' } : {}}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Khuyến nghị
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {activeTab === 'recommendations' ? (
+        <RecommendationsPage onAnalyze={(t) => { setActiveTab('analysis'); analyzeTicker(t); }} />
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Search & History */}
           <div className="lg:col-span-1 space-y-6 no-print">
@@ -370,6 +395,7 @@ function App() {
             )}
           </div>
         </div>
+        )}
       </main>
 
       {/* Footer */}
