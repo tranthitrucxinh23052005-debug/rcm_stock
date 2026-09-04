@@ -1,0 +1,205 @@
+{
+  "metadata": {
+    "data_updated_at": "04/09/2026"
+  },
+  "companies": [
+    {
+      "company_code": "SSI",
+      "company_name": "SSI",
+      "standard_rate": 0.135,
+      "day_basis": 360,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "VND",
+      "company_name": "VNDirect",
+      "standard_rate": 0.155,
+      "day_basis": 365,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "TCB",
+      "company_name": "Techcombank Securities",
+      "standard_rate": 0.16,
+      "day_basis": 365,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "MBS",
+      "company_name": "MBS",
+      "standard_rate": 0.15,
+      "day_basis": 360,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "VCSC",
+      "company_name": "Vietcap Securities",
+      "standard_rate": 0.155,
+      "day_basis": 365,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "HSC",
+      "company_name": "HSC",
+      "standard_rate": 0.15,
+      "day_basis": 365,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "ACBS",
+      "company_name": "ACBS",
+      "standard_rate": 0.165,
+      "day_basis": 365,
+      "credit_limit": null,
+      "active": true
+    },
+    {
+      "company_code": "DNSE",
+      "company_name": "DNSE Securities",
+      "standard_rate": 0.145,
+      "day_basis": 365,
+      "credit_limit": null,
+      "active": true
+    }
+  ],
+  "margin_packages": [
+    {
+      "package_id": "ssi_tplus5",
+      "company_code": "SSI",
+      "package_name": "SSI - Margin T+5",
+      "description": "Lãi suất ưu đãi 0% cho 5 ngày đầu, sau đó áp dụng lãi suất đại trà 13,5%/năm.",
+      "promo_days": 5,
+      "promo_rate": 0,
+      "post_promo_rate": 0.135,
+      "day_basis": 360,
+      "credit_limit": null,
+      "has_tplus": true,
+      "active": true
+    },
+    {
+      "package_id": "vnd_tplus3",
+      "company_code": "VND",
+      "package_name": "VNDirect - Margin T+3",
+      "description": "Lãi suất ưu đãi 0% cho 3 ngày đầu, sau đó áp dụng lãi suất đại trà 15,5%/năm.",
+      "promo_days": 3,
+      "promo_rate": 0,
+      "post_promo_rate": 0.155,
+      "day_basis": 365,
+      "credit_limit": null,
+      "has_tplus": true,
+      "active": true
+    },
+    {
+      "package_id": "mbs_tplus5",
+      "company_code": "MBS",
+      "package_name": "MBS - Margin T+5",
+      "description": "Lãi suất ưu đãi 0% cho 5 ngày đầu, sau đó áp dụng lãi suất đại trà 15%/năm.",
+      "promo_days": 5,
+      "promo_rate": 0,
+      "post_promo_rate": 0.15,
+      "day_basis": 360,
+      "credit_limit": null,
+      "has_tplus": true,
+      "active": true
+    },
+    {
+      "package_id": "hsc_tplus5",
+      "company_code": "HSC",
+      "package_name": "HSC - Margin T+5",
+      "description": "Lãi suất ưu đãi 0% cho 5 ngày đầu, sau đó áp dụng lãi suất đại trà 15%/năm.",
+      "promo_days": 5,
+      "promo_rate": 0,
+      "post_promo_rate": 0.15,
+      "day_basis": 365,
+      "credit_limit": null,
+      "has_tplus": true,
+      "active": true
+    },
+    {
+      "package_id": "dnse_tplus5",
+      "company_code": "DNSE",
+      "package_name": "DNSE - Margin T+5",
+      "description": "Lãi suất ưu đãi 0% cho 5 ngày đầu, sau đó áp dụng lãi suất đại trà 14,5%/năm.",
+      "promo_days": 5,
+      "promo_rate": 0,
+      "post_promo_rate": 0.145,
+      "day_basis": 365,
+      "credit_limit": null,
+      "has_tplus": true,
+      "active": true
+    }
+  ],
+  "new_customer_programs": [
+    {
+      "program_id": "ssi_new_50m",
+      "company_code": "SSI",
+      "program_name": "Margin 0.0 (duoi 50tr)",
+      "days_1": 180,
+      "rate_1": 0,
+      "rate_2": 0.135,
+      "standard_rate": 0.135,
+      "credit_limit": 50000000,
+      "day_basis": 360,
+      "block_over_limit": true,
+      "active": true
+    },
+    {
+      "program_id": "ssi_new_500m",
+      "company_code": "SSI",
+      "program_name": "Uu dai KH moi (duoi 500tr)",
+      "days_1": 30,
+      "rate_1": 0.068,
+      "rate_2": 0.135,
+      "standard_rate": 0.135,
+      "credit_limit": 500000000,
+      "day_basis": 360,
+      "block_over_limit": false,
+      "active": true
+    },
+    {
+      "program_id": "vnd_new",
+      "company_code": "VND",
+      "program_name": "VNDirect - Uu dai KH moi",
+      "days_1": 30,
+      "rate_1": 0.078,
+      "rate_2": 0.155,
+      "standard_rate": 0.155,
+      "credit_limit": null,
+      "day_basis": 365,
+      "block_over_limit": false,
+      "active": true
+    },
+    {
+      "program_id": "mbs_new",
+      "company_code": "MBS",
+      "program_name": "MBS - Uu dai KH moi",
+      "days_1": 30,
+      "rate_1": 0.075,
+      "rate_2": 0.15,
+      "standard_rate": 0.15,
+      "credit_limit": null,
+      "day_basis": 360,
+      "block_over_limit": false,
+      "active": true
+    },
+    {
+      "program_id": "dnse_new",
+      "company_code": "DNSE",
+      "program_name": "DNSE - Uu dai KH moi",
+      "days_1": 30,
+      "rate_1": 0.07,
+      "rate_2": 0.145,
+      "standard_rate": 0.145,
+      "credit_limit": null,
+      "day_basis": 365,
+      "block_over_limit": false,
+      "active": true
+    }
+  ]
+}

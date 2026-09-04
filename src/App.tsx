@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LineChart, TrendingUp, Sun, Moon, Printer, LayoutGrid, ShoppingCart } from 'lucide-react';
+import { LineChart, TrendingUp, Sun, Moon, Printer, LayoutGrid, ShoppingCart, Calculator } from 'lucide-react';
 import { supabase, EDGE_FUNCTION_URL } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 import type { AnalyzeResponse, StockAnalysisRecord, WatchlistAlert, WatchlistItem } from '@/types';
@@ -14,6 +14,7 @@ import LoadingSkeleton from '@/components/LoadingSkeleton';
 import PriceChart from '@/components/PriceChart';
 import RsiChart from '@/components/RsiChart';
 import RecommendationsPage from '@/components/RecommendationsPage';
+import MarginCalculator from '@/components/MarginCalculator';
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -23,7 +24,7 @@ function App() {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [alerts, setAlerts] = useState<WatchlistAlert[]>([]);
   const [monitoring, setMonitoring] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analysis' | 'recommendations'>('analysis');
+  const [activeTab, setActiveTab] = useState<'analysis' | 'recommendations' | 'margin'>('analysis');
 
   const fetchHistory = useCallback(async () => {
     const { data } = await supabase
@@ -288,6 +289,14 @@ function App() {
               <ShoppingCart className="w-4 h-4" />
               Khuyến nghị
             </button>
+            <button
+              onClick={() => setActiveTab('margin')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'margin' ? 'text-white' : 'text-muted hover:text-main'}`}
+              style={activeTab === 'margin' ? { background: 'linear-gradient(to right, #e1061e, #b30518)' } : {}}
+            >
+              <Calculator className="w-4 h-4" />
+              Lãi Margin
+            </button>
           </div>
         </div>
       </header>
@@ -296,6 +305,8 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {activeTab === 'recommendations' ? (
         <RecommendationsPage onAnalyze={(t) => { setActiveTab('analysis'); analyzeTicker(t); }} />
+        ) : activeTab === 'margin' ? (
+        <MarginCalculator />
         ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Search & History */}
